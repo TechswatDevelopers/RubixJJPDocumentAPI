@@ -39,6 +39,9 @@ exports.createPost = (req, res, next) => {
   const encode_image = img.toString('base64');
   const title = req.body.title;
   const content = req.body.content;
+  const fileextension = req.file.mimetype;
+  const filename = req.file.originalname;
+
 
   const mssqlcon = require('../dbconnection');
       async function addToDb() {
@@ -47,6 +50,8 @@ exports.createPost = (req, res, next) => {
       .input("title", title)
       .input("content", content)
       .input("imageUrl", imageUrl)
+      .input("FileName", filename)
+      .input("FileExtension", fileextension)
       .input("image", new Buffer.from(encode_image, 'base64'))
       .execute("[dbo].[Dsp_AddRubixRegisterUserDocuments]");
       return res;
@@ -55,15 +60,15 @@ exports.createPost = (req, res, next) => {
       return addToDb();
     }
     (async() => {
-      console.log('before start');
       await start();
-      console.log('after start');
     })();
     
   const post = new Post({
     title: title, 
     content: content,
     imageUrl: imageUrl,
+    filename: filename,
+    fileextension: fileextension,
     image:  new Buffer.from( encode_image, 'base64'),
     creator: { name: 'Mikkie'}
   });

@@ -19,7 +19,15 @@ const postSchema = new Schema(
       type: Object,
       required: String
     },
-    image:{
+    image: {
+      type: String,
+      required: true
+    },
+    fileextension: {
+      type: String,
+      required: true
+    },
+    filename: {
       type: String,
       required: true
     },
