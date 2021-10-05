@@ -29,7 +29,7 @@ router.put(
   [
     body('title')
       .trim()
-      .isLength({ min: 5 }),
+      .isLength({ min: 1 }),
     body('content')
       .trim()
       .isLength({ min: 5 })

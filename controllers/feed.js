@@ -5,6 +5,8 @@ const { validationResult } = require("express-validator/check");
 
 const Post = require('../models/post');
 
+
+
 exports.getPosts = (req, res, next) => {
   Post.find()
     .then(posts => {
@@ -37,11 +39,32 @@ exports.createPost = (req, res, next) => {
   const encode_image = img.toString('base64');
   const title = req.body.title;
   const content = req.body.content;
+
+  const mssqlcon = require('../dbconnection');
+      async function addToDb() {
+      const conn = await mssqlcon.getConnection();
+      const res = await conn.request()
+      .input("title", title)
+      .input("content", content)
+      .input("imageUrl", imageUrl)
+      .input("image", new Buffer.from(encode_image, 'base64'))
+      .execute("[dbo].[Dsp_AddRubixRegisterUserDocuments]");
+      return res;
+      }
+    function start() {
+      return addToDb();
+    }
+    (async() => {
+      console.log('before start');
+      await start();
+      console.log('after start');
+    })();
+    
   const post = new Post({
     title: title, 
     content: content,
     imageUrl: imageUrl,
-    image:  new Buffer.from(encode_image, 'base64'),
+    image:  new Buffer.from( encode_image, 'base64'),
     creator: { name: 'Mikkie'}
   });
   post
