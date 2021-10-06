@@ -34,7 +34,7 @@ exports.createPost = (req, res, next) => {
   }
   const imageUrl = req.file.path.replace('\\', '/')
   const img = fs.readFileSync(req.file.path)
-  const encode_image = img.toString('base64')
+  const encodeImage = img.toString('base64')
   const title = req.body.title
   const content = req.body.content
   const fileextension = req.file.mimetype
@@ -49,7 +49,7 @@ exports.createPost = (req, res, next) => {
       .input('imageUrl', imageUrl)
       .input('FileName', filename)
       .input('FileExtension', fileextension)
-      .input('image', new Buffer.From(encode_image, 'base64'))
+      .input('image', new Buffer.From(encodeImage, 'base64'))
       .execute('[dbo].[Dsp_AddRubixRegisterUserDocuments]')
     return res
   }
@@ -66,7 +66,7 @@ exports.createPost = (req, res, next) => {
     imageUrl: imageUrl,
     filename: filename,
     fileextension: fileextension,
-    image: new Buffer.From(encode_image, 'base64'),
+    image: new Buffer.From(encodeImage, 'base64'),
     creator: { name: 'Mikkie' }
   })
   post
