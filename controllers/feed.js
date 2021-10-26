@@ -49,7 +49,7 @@ exports.createPost = (req, res, next) => {
       .input('imageUrl', imageUrl)
       .input('FileName', filename)
       .input('FileExtension', fileextension)
-      .input('image', new Buffer.From(encodeImage, 'base64'))
+      .input('image', encodeImage)
       .execute('[dbo].[Dsp_AddRubixRegisterUserDocuments]')
     return res
   }
@@ -66,7 +66,8 @@ exports.createPost = (req, res, next) => {
     imageUrl: imageUrl,
     filename: filename,
     fileextension: fileextension,
-    image: new Buffer.From(encodeImage, 'base64'),
+    image: encodeImage,
+    // image: new Buffer.From(encodeImage, 'base64'),
     creator: { name: 'Mikkie' }
   })
   post
