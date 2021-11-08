@@ -35,21 +35,25 @@ exports.createPost = (req, res, next) => {
   const imageUrl = req.file.path.replace('\\', '/')
   const img = fs.readFileSync(req.file.path)
   const encodeImage = img.toString('base64')
-  const title = req.body.title
-  const content = req.body.content
+  const RubixRegisterUserID = req.body.RubixRegisterUserID
+  const FileType = req.body.FileType
   const fileextension = req.file.mimetype
   const filename = req.file.originalname
+  const fileSizeInBytes = req.file.size
+  // Convert the file size to megabytes (optional)
+  const fileSizeInMegabytes = fileSizeInBytes / (1024 * 1024)
 
   const mssqlcon = require('../dbconnection')
   async function addToDb () {
     const conn = await mssqlcon.getConnection()
     const res = await conn.request()
-      .input('title', title)
-      .input('content', content)
+      .input('RubixRegisterUserID', RubixRegisterUserID)
+      .input('FileType', FileType)
       .input('imageUrl', imageUrl)
       .input('FileName', filename)
       .input('FileExtension', fileextension)
       .input('image', encodeImage)
+      .input('FileSize', fileSizeInMegabytes)
       .execute('[dbo].[Dsp_AddRubixRegisterUserDocuments]')
     return res
   }
@@ -61,14 +65,14 @@ exports.createPost = (req, res, next) => {
   })()
 
   const post = new Post({
-    title: title,
-    content: content,
+    RubixRegisterUserID: RubixRegisterUserID,
+    FileType: FileType,
     imageUrl: imageUrl,
     filename: filename,
     fileextension: fileextension,
-    image: encodeImage,
+    image: encodeImage
     // image: new Buffer.From(encodeImage, 'base64'),
-    creator: { name: 'Mikkie' }
+    // creator: { name: 'Mikkie' }
   })
   post
     .save()
@@ -115,8 +119,8 @@ exports.updatePost = (req, res, next) => {
     error.statusCode = 422
     throw error
   }
-  const title = req.body.title
-  const content = req.body.content
+  const RubixRegisterUserID = req.body.RubixRegisterUserID
+  const FileType = req.body.FileType
   let imageUrl = req.body.image
   if (req.file) {
     imageUrl = req.file.path.replace('\\', '/')
@@ -136,9 +140,9 @@ exports.updatePost = (req, res, next) => {
       if (imageUrl !== post.imageUrl) {
         clearImage(post.imageUrl)
       }
-      post.title = title
+      post.RubixRegisterUserID = RubixRegisterUserID
       post.imageUrl = imageUrl
-      post.content = content
+      post.FileType = FileType
       return post.save()
     })
     .then(result => {

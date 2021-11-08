@@ -12,10 +12,10 @@ router.get('/posts', feedController.getPosts)
 router.post(
   '/post',
   [
-    body('title')
+    body('RubixRegisterUserID')
       .trim()
       .isLength({ min: 1 }),
-    body('content')
+    body('FileType')
       .trim()
       .isLength({ min: 5 })
   ],
@@ -27,10 +27,10 @@ router.get('/post/:postId', feedController.getPost)
 router.put(
   '/post/:postId',
   [
-    body('title')
+    body('RubixRegisterUserID')
       .trim()
       .isLength({ min: 1 }),
-    body('content')
+    body('FileType')
       .trim()
       .isLength({ min: 5 })
   ],

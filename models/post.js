@@ -1,9 +1,10 @@
 const mongoose = require('mongoose')
+const { Numeric } = require('mssql')
 const Schema = mongoose.Schema
 
 const postSchema = new Schema(
   {
-    title: {
+    RubixRegisterUserID: {
       type: String,
       required: true
     },
@@ -11,13 +12,9 @@ const postSchema = new Schema(
       type: String,
       required: true
     },
-    content: {
+    FileType: {
       type: String,
       required: true
-    },
-    creator: {
-      type: Object,
-      required: String
     },
     image: {
       type: String,
