@@ -44,7 +44,7 @@ exports.createPost = (req, res, next) => {
   const fileSizeInMegabytes = fileSizeInBytes / (1024 * 1024)
 
   const mssqlcon = require('../dbconnection')
-  async function addToDb () {
+  async function addToDb() {
     const conn = await mssqlcon.getConnection()
     const res = await conn.request()
       .input('RubixRegisterUserID', RubixRegisterUserID)
@@ -79,7 +79,8 @@ exports.createPost = (req, res, next) => {
     .then(result => {
       res.status(201).json({
         message: 'Post created successfully!',
-        post: result
+        post: result,
+        DBres: res
       })
     })
     .catch(err => {
