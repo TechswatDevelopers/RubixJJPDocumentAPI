@@ -33,8 +33,8 @@ exports.createPost = (req, res, next) => {
     throw error
   }
   const imageUrl = req.file.path.replace('\\', '/')
-  const img = fs.readFileSync(req.file.path)
-  const encodeImage = img.toString('base64')
+  // const img = fs.readFileSync(req.file.path)
+  // const encodeImage = img.toString('base64')
   const RubixRegisterUserID = req.body.RubixRegisterUserID
   const FileType = req.body.FileType
   const fileextension = req.file.mimetype
@@ -44,7 +44,7 @@ exports.createPost = (req, res, next) => {
   const fileSizeInMegabytes = fileSizeInBytes / (1024 * 1024)
 
   const mssqlcon = require('../dbconnection')
-  async function addToDb() {
+  async function addToDb () {
     const conn = await mssqlcon.getConnection()
     const res = await conn.request()
       .input('RubixRegisterUserID', RubixRegisterUserID)
@@ -52,7 +52,7 @@ exports.createPost = (req, res, next) => {
       .input('imageUrl', imageUrl)
       .input('FileName', filename)
       .input('FileExtension', fileextension)
-      .input('image', encodeImage)
+      // .input('image', encodeImage)
       .input('FileSize', fileSizeInMegabytes)
       .execute('[dbo].[Dsp_AddRubixRegisterUserDocuments]')
     return res
@@ -69,8 +69,8 @@ exports.createPost = (req, res, next) => {
     FileType: FileType,
     imageUrl: imageUrl,
     filename: filename,
-    fileextension: fileextension,
-    image: encodeImage
+    fileextension: fileextension
+    // image: encodeImage
     // image: new Buffer.From(encodeImage, 'base64'),
     // creator: { name: 'Mikkie' }
   })
@@ -79,8 +79,7 @@ exports.createPost = (req, res, next) => {
     .then(result => {
       res.status(201).json({
         message: 'Post created successfully!',
-        post: result,
-        DBres: res
+        post: result
       })
     })
     .catch(err => {
