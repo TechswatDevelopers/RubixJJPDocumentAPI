@@ -33,8 +33,8 @@ exports.createPost = (req, res, next) => {
     throw error
   }
   const imageUrl = req.file.path.replace('\\', '/')
-  // const img = fs.readFileSync(req.file.path)
-  // const encodeImage = img.toString('base64')
+  const img = fs.readFileSync(req.file.path)
+  const encodeImage = img.toString('base64')
   const RubixRegisterUserID = req.body.RubixRegisterUserID
   const FileType = req.body.FileType
   const fileextension = req.file.mimetype
@@ -69,8 +69,8 @@ exports.createPost = (req, res, next) => {
     FileType: FileType,
     imageUrl: imageUrl,
     filename: filename,
-    fileextension: fileextension
-    // image: encodeImage
+    fileextension: fileextension,
+    image: encodeImage
     // image: new Buffer.From(encodeImage, 'base64'),
     // creator: { name: 'Mikkie' }
   })
@@ -94,7 +94,8 @@ exports.getPost = (req, res, next) => {
   const postId = req.params.postId
   // const imgArray= res.map(element => element.postId)
   // res.send(imgArray)
-  Post.findById(postId)
+  // Post.findById(postId)
+  Post.find({ RubixRegisterUserID: postId })
     .then(post => {
       if (!post) {
         const error = new Error('Could not find post.')
