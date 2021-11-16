@@ -20,7 +20,7 @@ exports.getPosts = (req, res, next) => {
     })
 }
 
-exports.createPost = (req, res, next) => {
+exports.createPost = async function (req, res, next) {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     const error = new Error('validation failed data is incorrect')
@@ -32,6 +32,7 @@ exports.createPost = (req, res, next) => {
     error.statusCode = 422
     throw error
   }
+  let ImageID = ''
   const imageUrl = req.file.path.replace('\\', '/')
   const img = fs.readFileSync(req.file.path)
   const encodeImage = img.toString('base64')
@@ -44,25 +45,30 @@ exports.createPost = (req, res, next) => {
   const fileSizeInMegabytes = fileSizeInBytes / (1024 * 1024)
 
   const mssqlcon = require('../dbconnection')
-  async function addToDb () {
-    const conn = await mssqlcon.getConnection()
-    const res = await conn.request()
-      .input('RubixRegisterUserID', RubixRegisterUserID)
-      .input('FileType', FileType)
-      .input('imageUrl', imageUrl)
-      .input('FileName', filename)
-      .input('FileExtension', fileextension)
-      // .input('image', encodeImage)
-      .input('FileSize', fileSizeInMegabytes)
-      .execute('[dbo].[Dsp_AddRubixRegisterUserDocuments]')
-    return res
-  }
-  function start () {
-    return addToDb()
-  }
-  (async () => {
-    await start()
-  })()
+  const conn = await mssqlcon.getConnection()
+  const rest = await conn.request()
+
+  async function addToDb() {
+    return new Promise(function (resolve, reject) {
+      rest
+        .input('RubixRegisterUserID', RubixRegisterUserID)
+        .input('FileType', FileType)
+        .input('imageUrl', imageUrl)
+        .input('FileName', filename)
+        .input('FileExtension', fileextension)
+        .input('FileSize', fileSizeInMegabytes)
+        .execute('[dbo].[Dsp_AddRubixRegisterUserDocuments]', function (err, recordsets) {
+          // console.log(res)
+          if (err) {
+            reject(err)
+          } else {
+            ImageID = recordsets.recordset[0].ImageID
+            resolve(ImageID)
+          }
+        })
+    })
+  } const VarTemp = await addToDb()
+  console.log(VarTemp)
 
   const post = new Post({
     RubixRegisterUserID: RubixRegisterUserID,
@@ -70,7 +76,8 @@ exports.createPost = (req, res, next) => {
     imageUrl: imageUrl,
     filename: filename,
     fileextension: fileextension,
-    image: encodeImage
+    image: encodeImage,
+    ImageID: VarTemp
     // image: new Buffer.From(encodeImage, 'base64'),
     // creator: { name: 'Mikkie' }
   })
@@ -79,6 +86,7 @@ exports.createPost = (req, res, next) => {
     .then(result => {
       res.status(201).json({
         message: 'Post created successfully!',
+        ImageID: VarTemp,
         post: result
       })
     })
@@ -90,12 +98,49 @@ exports.createPost = (req, res, next) => {
     })
 }
 
-exports.getPost = (req, res, next) => {
-  const postId = req.params.postId
-  // const imgArray= res.map(element => element.postId)
-  // res.send(imgArray)
-  // Post.findById(postId)
-  Post.find({ RubixRegisterUserID: postId })
+exports.getPost = async function (req, res, next) {
+  const RubixRegisterUserID = req.params.postId
+  console.log(RubixRegisterUserID)
+  console.log(req.params.postId)
+  let ImageID = []
+
+  const mssqlcon = require('../dbconnection')
+  const conn = await mssqlcon.getConnection()
+  const rest = await conn.request()
+
+  async function GetLatestSQLDocuments() {
+    return new Promise(function (resolve, reject) {
+      rest
+        .input('RubixRegisterUserID', RubixRegisterUserID)
+        .execute('[dbo].[Dsp_RubixGetAllDocuments]', function (err, recordsets) {
+          // console.log(res)
+          if (err) {
+            reject(err)
+          } else {
+            if (recordsets.recordset[1] === undefined && recordsets.recordset[2] === undefined && recordsets.recordset[3] === undefined) {
+              ImageID = [recordsets.recordset[0].LastId]
+            } else if (recordsets.recordset[2] === undefined && recordsets.recordset[3] === undefined) {
+              ImageID = [recordsets.recordset[0].LastId
+                , recordsets.recordset[1].LastId]
+            }
+            else if (recordsets.recordset[3] === undefined) {
+              ImageID = [recordsets.recordset[0].LastId
+                , recordsets.recordset[1].LastId
+                , recordsets.recordset[2].LastId]
+            } else {
+              ImageID = ['No Record']
+              console.log(recordsets.recordset[3])
+            }
+            // , recordsets.recordset[2].LastId
+            // , recordsets.recordset[3].LastId]
+            resolve(ImageID)
+          }
+        })
+    })
+  } const VarTempDocumentID = await GetLatestSQLDocuments()
+  // console.log('varid', VarTempDocumentID)
+
+  Post.find({ ImageID: VarTempDocumentID })
     .then(post => {
       if (!post) {
         const error = new Error('Could not find post.')
@@ -103,7 +148,7 @@ exports.getPost = (req, res, next) => {
         throw error
       }
       res.status(200).json({ message: 'Post fetched.', post: post })
-    })//, buffer: send(res.image.buffer)
+    })
     .catch(err => {
       if (!err.statusCode) {
         err.statusCode = 500

@@ -3,7 +3,7 @@ class DBConnection {
   async getConnection () {
     try {
       return await mssql.connect({
-        server: '197.189.218.234',
+        server: '192.168.1.123',
         authentication: {
           type: 'default',
           options: {

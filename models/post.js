@@ -27,6 +27,10 @@ const postSchema = new Schema(
     filename: {
       type: String,
       required: true
+    },
+    ImageID: {
+      type: String,
+      required: true
     }
   },
   { timestamps: true }
