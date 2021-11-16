@@ -48,7 +48,7 @@ exports.createPost = async function (req, res, next) {
   const conn = await mssqlcon.getConnection()
   const rest = await conn.request()
 
-  async function addToDb() {
+  async function addToDb () {
     return new Promise(function (resolve, reject) {
       rest
         .input('RubixRegisterUserID', RubixRegisterUserID)
@@ -108,7 +108,7 @@ exports.getPost = async function (req, res, next) {
   const conn = await mssqlcon.getConnection()
   const rest = await conn.request()
 
-  async function GetLatestSQLDocuments() {
+  async function GetLatestSQLDocuments () {
     return new Promise(function (resolve, reject) {
       rest
         .input('RubixRegisterUserID', RubixRegisterUserID)
@@ -120,13 +120,12 @@ exports.getPost = async function (req, res, next) {
             if (recordsets.recordset[1] === undefined && recordsets.recordset[2] === undefined && recordsets.recordset[3] === undefined) {
               ImageID = [recordsets.recordset[0].LastId]
             } else if (recordsets.recordset[2] === undefined && recordsets.recordset[3] === undefined) {
-              ImageID = [recordsets.recordset[0].LastId
-                , recordsets.recordset[1].LastId]
-            }
-            else if (recordsets.recordset[3] === undefined) {
-              ImageID = [recordsets.recordset[0].LastId
-                , recordsets.recordset[1].LastId
-                , recordsets.recordset[2].LastId]
+              ImageID = [recordsets.recordset[0].LastId,
+                recordsets.recordset[1].LastId]
+            } else if (recordsets.recordset[3] === undefined) {
+              ImageID = [recordsets.recordset[0].LastId,
+                recordsets.recordset[1].LastId,
+                recordsets.recordset[2].LastId]
             } else {
               ImageID = ['No Record']
               console.log(recordsets.recordset[3])
