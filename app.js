@@ -29,9 +29,9 @@ const fileStorage = multer.diskStorage({
 const fileFilter = (req, file, cb) => {
   if (
     file.mimetype === 'image/png' ||
-      file.mimetype === 'image/jpg' ||
-      file.mimetype === 'image/jpeg' ||
-      file.mimetype === 'application/pdf'
+    file.mimetype === 'image/jpg' ||
+    file.mimetype === 'image/jpeg' ||
+    file.mimetype === 'application/pdf'
   ) {
     cb(null, true)
   } else {
@@ -43,16 +43,31 @@ const fileFilter = (req, file, cb) => {
 app.use(bodyParser.json())
 app.use(multer({ storage: fileStorage, fileFilter: fileFilter }).single('image'))
 
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
+// app.use((req, res, next) => {
+//   res.setHeader('Access-Control-Allow-Origin', '*')
+//   res.setHeader(
+//     'Access-Control-Allow-Headers',
+//     'Origin, X-Requested-With, Content-Type, Accept'
+//   )
+// Add headers
+app.use(function (req, res, next) {
+  // Website you wish to allow to connect
+  res.setHeader('Access-Control-Allow-Origin', '*', 'https://rubixdev.cjstudents.co.za:197', 'http://localhost:3000', 'http://localhost')
+  // Request methods you wish to allow
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST')
+  // Request headers you wish to allow
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type')
+  // Set to true if you need the website to include cookies in the requests sent
+  // to the API (e.g. in case you use sessions)
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+  // res.setHeader('Access-Control-Allow-Credentials', true)
+  // Pass to next layer of middleware
   next()
-  // res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-  // next()
 })
+//   next()
+//   // res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+//   // next()
+// })
 
 app.use('/images', express.static(path.join(__dirname, 'images')))
 

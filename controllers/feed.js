@@ -42,7 +42,9 @@ exports.createPost = async function (req, res, next) {
   const filename = req.file.originalname
   const fileSizeInBytes = req.file.size
   // Convert the file size to megabytes (optional)
-  const fileSizeInMegabytes = fileSizeInBytes / (1024 * 1024)
+  const fileSizeInMegabytes = fileSizeInBytes
+
+  console.log(fileSizeInMegabytes)
 
   const mssqlcon = require('../dbconnection')
   const conn = await mssqlcon.getConnection()
@@ -100,9 +102,9 @@ exports.createPost = async function (req, res, next) {
 
 exports.getPost = async function (req, res, next) {
   const RubixRegisterUserID = req.params.postId
-  console.log(RubixRegisterUserID)
-  console.log(req.params.postId)
-  let ImageID = []
+  // console.log(RubixRegisterUserID)
+  // console.log(req.params.postId)
+  const ImageID = []
 
   const mssqlcon = require('../dbconnection')
   const conn = await mssqlcon.getConnection()
@@ -117,27 +119,41 @@ exports.getPost = async function (req, res, next) {
           if (err) {
             reject(err)
           } else {
-            if (recordsets.recordset[1] === undefined && recordsets.recordset[2] === undefined && recordsets.recordset[3] === undefined) {
-              ImageID = [recordsets.recordset[0].LastId]
-            } else if (recordsets.recordset[2] === undefined && recordsets.recordset[3] === undefined) {
-              ImageID = [recordsets.recordset[0].LastId,
-                recordsets.recordset[1].LastId]
-            } else if (recordsets.recordset[3] === undefined) {
-              ImageID = [recordsets.recordset[0].LastId,
-                recordsets.recordset[1].LastId,
-                recordsets.recordset[2].LastId]
-            } else {
-              ImageID = ['No Record']
-              console.log(recordsets.recordset[3])
+            // console.log('in if statement')
+            for (let index = 0; index < recordsets.recordset.length; index++) {
+              if (recordsets.recordset[index] !== undefined) {
+                ImageID.push(recordsets.recordset[index].LastId)
+              }
             }
-            // , recordsets.recordset[2].LastId
-            // , recordsets.recordset[3].LastId]
+            // if (recordsets.recordset[0] === undefined && recordsets.recordset[1] === undefined && recordsets.recordset[2] === undefined && recordsets.recordset[3] === undefined) {
+            //   console.log('1st if')
+            //   ImageID = ['No Record']
+            // } else if (recordsets.recordset[1] === undefined && recordsets.recordset[2] === undefined && recordsets.recordset[3] === undefined) {
+            //   console.log('2nd if')
+            //   ImageID = [recordsets.recordset[0].LastId]
+            // } else if (recordsets.recordset[2] === undefined && recordsets.recordset[3] === undefined) {
+            //   console.log('3rd if')
+            //   ImageID = [recordsets.recordset[0].LastId,
+            //   recordsets.recordset[1].LastId]
+            // } else if (recordsets.recordset[3] === undefined) {
+            //   console.log('4rth if')
+            //   ImageID = [recordsets.recordset[0].LastId,
+            //   recordsets.recordset[1].LastId,
+            //   recordsets.recordset[2].LastId]
+            // } else {
+            //   console.log('else')
+            //   ImageID = [recordsets.recordset[0].LastId,
+            //   recordsets.recordset[1].LastId,
+            //   recordsets.recordset[2].LastId,
+            //   recordsets.recordset[3].LastId]
+            //   console.log(ImageID)
+            // }
             resolve(ImageID)
           }
         })
     })
   } const VarTempDocumentID = await GetLatestSQLDocuments()
-  // console.log('varid', VarTempDocumentID)
+  console.log('varid', VarTempDocumentID)
 
   Post.find({ ImageID: VarTempDocumentID })
     .then(post => {
