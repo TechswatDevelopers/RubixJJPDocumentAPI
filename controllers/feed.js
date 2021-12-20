@@ -5,6 +5,8 @@ const { validationResult } = require('express-validator/check')
 
 const Post = require('../models/post')
 
+let FileName = ''
+
 exports.getPosts = (req, res, next) => {
   Post.find()
     .then(posts => {
@@ -41,10 +43,21 @@ exports.createPost = async function (req, res, next) {
   const fileextension = req.file.mimetype
   const filename = req.file.originalname
   const fileSizeInBytes = req.file.size
+  const fileName = req.file.filename
   // Convert the file size to megabytes (optional)
   const fileSizeInMegabytes = fileSizeInBytes
 
-  console.log(fileSizeInMegabytes)
+  // console.log(fileName)
+
+  // if (req.file.mimetype === 'image/png') {
+  //   FileName = fileName + '.png'
+  // } else if (req.file.mimetype === 'image/jpg') {
+  //   FileName = fileName + '.jpg'
+  // } else if (req.file.mimetype === 'image/jpeg') {
+  //   FileName = fileName + '.jpeg'
+  // } else if (req.file.mimetype === 'application/pdf') {
+  //   FileName = fileName + '.pdf'
+  // }
 
   const mssqlcon = require('../dbconnection')
   const conn = await mssqlcon.getConnection()
@@ -56,8 +69,9 @@ exports.createPost = async function (req, res, next) {
         .input('RubixRegisterUserID', RubixRegisterUserID)
         .input('FileType', FileType)
         .input('imageUrl', imageUrl)
-        .input('FileName', filename)
+        .input('FileName', fileName)
         .input('FileExtension', fileextension)
+        .input('image', filename)
         .input('FileSize', fileSizeInMegabytes)
         .execute('[dbo].[Dsp_AddRubixRegisterUserDocuments]', function (err, recordsets) {
           // console.log(res)
@@ -76,7 +90,7 @@ exports.createPost = async function (req, res, next) {
     RubixRegisterUserID: RubixRegisterUserID,
     FileType: FileType,
     imageUrl: imageUrl,
-    filename: filename,
+    filename: fileName,
     fileextension: fileextension,
     image: encodeImage,
     ImageID: VarTemp
@@ -153,7 +167,7 @@ exports.getPost = async function (req, res, next) {
         })
     })
   } const VarTempDocumentID = await GetLatestSQLDocuments()
-  console.log('varid', VarTempDocumentID)
+  // console.log('varid', VarTempDocumentID)
 
   Post.find({ ImageID: VarTempDocumentID })
     .then(post => {

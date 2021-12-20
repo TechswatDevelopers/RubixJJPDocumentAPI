@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 const multer = require('multer')
 const { v4: uuidv4 } = require('uuid')
+const cors = require('cors')
 
 const feedRoutes = require('./routes/feed')
 
@@ -18,14 +19,30 @@ const app = express()
 //         cb(null, new Date().toISOString() + '-' + file.originalname);
 //     }
 // });
+
+// app.use(function (req, res, next) {
+//   // Website you wish to allow to connect
+//   // res.setHeader('Access-Control-Allow-Origin:', ' *', 'https://rubixdev.cjstudents.co.za:446 ', 'http://localhost:3300', 'http://localhost', 'https://rubix.cjstudents.co.za:446')
+//   // Request methods you wish to allow
+//   res.setHeader('Access-Control-Allow-Methods', 'GET, POST')
+
 const fileStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'images')
   },
   filename: function (req, file, cb) {
-    cb(null, uuidv4())
+    if (file.mimetype === 'image/png') {
+      cb(null, uuidv4() + '.png')
+    } else if (file.mimetype === 'image/jpg') {
+      cb(null, uuidv4() + '.jpg')
+    } else if (file.mimetype === 'image/jpeg') {
+      cb(null, uuidv4() + '.jpeg')
+    } else if (file.mimetype === 'application/pdf') {
+      cb(null, uuidv4() + '.pdf')
+    }
   }
 })
+
 const fileFilter = (req, file, cb) => {
   if (
     file.mimetype === 'image/png' ||
@@ -43,31 +60,13 @@ const fileFilter = (req, file, cb) => {
 app.use(bodyParser.json())
 app.use(multer({ storage: fileStorage, fileFilter: fileFilter }).single('image'))
 
-// app.use((req, res, next) => {
-//   res.setHeader('Access-Control-Allow-Origin', '*')
-//   res.setHeader(
-//     'Access-Control-Allow-Headers',
-//     'Origin, X-Requested-With, Content-Type, Accept'
-//   )
-// Add headers
-app.use(function (req, res, next) {
-  // Website you wish to allow to connect
-  res.setHeader('Access-Control-Allow-Origin', '*', 'https://rubixdev.cjstudents.co.za:197', 'http://localhost:3000', 'http://localhost')
-  // Request methods you wish to allow
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST')
-  // Request headers you wish to allow
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type')
-  // Set to true if you need the website to include cookies in the requests sent
-  // to the API (e.g. in case you use sessions)
-  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
-  // res.setHeader('Access-Control-Allow-Credentials', true)
-  // Pass to next layer of middleware
-  next()
-})
-//   next()
-//   // res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-//   // next()
-// })
+// app.use(cors({
+//   origin: ['https://rubixdev.cjstudents.co.za:446', 'http://localhost:3000', 'https://rubix.cjstudents.co.za:446']
+// }))
+
+// app.use(cors({
+//   methods: ['GET', 'POST']
+// }))
 
 app.use('/images', express.static(path.join(__dirname, 'images')))
 
