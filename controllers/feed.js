@@ -5,7 +5,7 @@ const { validationResult } = require('express-validator/check')
 
 const Post = require('../models/post')
 
-let FileName = ''
+const FileName = ''
 
 exports.getPosts = (req, res, next) => {
   Post.find()
@@ -126,45 +126,49 @@ exports.getPost = async function (req, res, next) {
 
   async function GetLatestSQLDocuments () {
     return new Promise(function (resolve, reject) {
-      rest
-        .input('RubixRegisterUserID', RubixRegisterUserID)
-        .execute('[dbo].[Dsp_RubixGetAllDocuments]', function (err, recordsets) {
+      if (RubixRegisterUserID === 'null') {
+        console.log('ID Empty')
+      } else {
+        rest
+          .input('RubixRegisterUserID', RubixRegisterUserID)
+          .execute('[dbo].[Dsp_RubixGetAllDocuments]', function (err, recordsets) {
           // console.log(res)
-          if (err) {
-            reject(err)
-          } else {
+            if (err) {
+              reject(err)
+            } else {
             // console.log('in if statement')
-            for (let index = 0; index < recordsets.recordset.length; index++) {
-              if (recordsets.recordset[index] !== undefined) {
-                ImageID.push(recordsets.recordset[index].LastId)
+              for (let index = 0; index < recordsets.recordset.length; index++) {
+                if (recordsets.recordset[index] !== undefined) {
+                  ImageID.push(recordsets.recordset[index].LastId)
+                }
               }
+              // if (recordsets.recordset[0] === undefined && recordsets.recordset[1] === undefined && recordsets.recordset[2] === undefined && recordsets.recordset[3] === undefined) {
+              //   console.log('1st if')
+              //   ImageID = ['No Record']
+              // } else if (recordsets.recordset[1] === undefined && recordsets.recordset[2] === undefined && recordsets.recordset[3] === undefined) {
+              //   console.log('2nd if')
+              //   ImageID = [recordsets.recordset[0].LastId]
+              // } else if (recordsets.recordset[2] === undefined && recordsets.recordset[3] === undefined) {
+              //   console.log('3rd if')
+              //   ImageID = [recordsets.recordset[0].LastId,
+              //   recordsets.recordset[1].LastId]
+              // } else if (recordsets.recordset[3] === undefined) {
+              //   console.log('4rth if')
+              //   ImageID = [recordsets.recordset[0].LastId,
+              //   recordsets.recordset[1].LastId,
+              //   recordsets.recordset[2].LastId]
+              // } else {
+              //   console.log('else')
+              //   ImageID = [recordsets.recordset[0].LastId,
+              //   recordsets.recordset[1].LastId,
+              //   recordsets.recordset[2].LastId,
+              //   recordsets.recordset[3].LastId]
+              //   console.log(ImageID)
+              // }
+              resolve(ImageID)
             }
-            // if (recordsets.recordset[0] === undefined && recordsets.recordset[1] === undefined && recordsets.recordset[2] === undefined && recordsets.recordset[3] === undefined) {
-            //   console.log('1st if')
-            //   ImageID = ['No Record']
-            // } else if (recordsets.recordset[1] === undefined && recordsets.recordset[2] === undefined && recordsets.recordset[3] === undefined) {
-            //   console.log('2nd if')
-            //   ImageID = [recordsets.recordset[0].LastId]
-            // } else if (recordsets.recordset[2] === undefined && recordsets.recordset[3] === undefined) {
-            //   console.log('3rd if')
-            //   ImageID = [recordsets.recordset[0].LastId,
-            //   recordsets.recordset[1].LastId]
-            // } else if (recordsets.recordset[3] === undefined) {
-            //   console.log('4rth if')
-            //   ImageID = [recordsets.recordset[0].LastId,
-            //   recordsets.recordset[1].LastId,
-            //   recordsets.recordset[2].LastId]
-            // } else {
-            //   console.log('else')
-            //   ImageID = [recordsets.recordset[0].LastId,
-            //   recordsets.recordset[1].LastId,
-            //   recordsets.recordset[2].LastId,
-            //   recordsets.recordset[3].LastId]
-            //   console.log(ImageID)
-            // }
-            resolve(ImageID)
-          }
-        })
+          })
+      }
     })
   } const VarTempDocumentID = await GetLatestSQLDocuments()
   // console.log('varid', VarTempDocumentID)
