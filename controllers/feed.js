@@ -63,55 +63,59 @@ exports.createPost = async function (req, res, next) {
   const conn = await mssqlcon.getConnection()
   const rest = await conn.request()
 
-  async function addToDb () {
-    return new Promise(function (resolve, reject) {
-      rest
-        .input('RubixRegisterUserID', RubixRegisterUserID)
-        .input('FileType', FileType)
-        .input('imageUrl', imageUrl)
-        .input('FileName', fileName)
-        .input('FileExtension', fileextension)
-        .input('image', filename)
-        .input('FileSize', fileSizeInMegabytes)
-        .execute('[dbo].[Dsp_AddRubixRegisterUserDocuments]', function (err, recordsets) {
-          // console.log(res)
-          if (err) {
-            reject(err)
-          } else {
-            ImageID = recordsets.recordset[0].ImageID
-            resolve(ImageID)
-          }
-        })
-    })
-  } const VarTemp = await addToDb()
-  console.log(VarTemp)
-
-  const post = new Post({
-    RubixRegisterUserID: RubixRegisterUserID,
-    FileType: FileType,
-    imageUrl: imageUrl,
-    filename: fileName,
-    fileextension: fileextension,
-    image: encodeImage,
-    ImageID: VarTemp
-    // image: new Buffer.From(encodeImage, 'base64'),
-    // creator: { name: 'Mikkie' }
-  })
-  post
-    .save()
-    .then(result => {
-      res.status(201).json({
-        message: 'Post created successfully!',
-        ImageID: VarTemp,
-        post: result
+  if (RubixRegisterUserID === 'null' || RubixRegisterUserID === null) {
+    console.log('Trying to add null value', RubixRegisterUserID)
+  } else {
+    async function addToDb () {
+      return new Promise(function (resolve, reject) {
+        rest
+          .input('RubixRegisterUserID', RubixRegisterUserID)
+          .input('FileType', FileType)
+          .input('imageUrl', imageUrl)
+          .input('FileName', fileName)
+          .input('FileExtension', fileextension)
+          .input('image', filename)
+          .input('FileSize', fileSizeInMegabytes)
+          .execute('[dbo].[Dsp_AddRubixRegisterUserDocuments]', function (err, recordsets) {
+            // console.log(res)
+            if (err) {
+              reject(err)
+            } else {
+              ImageID = recordsets.recordset[0].ImageID
+              resolve(ImageID)
+            }
+          })
       })
+    } const VarTemp = await addToDb()
+    console.log(VarTemp)
+
+    const post = new Post({
+      RubixRegisterUserID: RubixRegisterUserID,
+      FileType: FileType,
+      imageUrl: imageUrl,
+      filename: fileName,
+      fileextension: fileextension,
+      image: encodeImage,
+      ImageID: VarTemp
+      // image: new Buffer.From(encodeImage, 'base64'),
+      // creator: { name: 'Mikkie' }
     })
-    .catch(err => {
-      if (!err.statusCode) {
-        err.statusCode = 500
-      }
-      next(err)
-    })
+    post
+      .save()
+      .then(result => {
+        res.status(201).json({
+          message: 'Post created successfully!',
+          ImageID: VarTemp,
+          post: result
+        })
+      })
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500
+        }
+        next(err)
+      })
+  }
 }
 
 exports.getPost = async function (req, res, next) {
@@ -126,17 +130,17 @@ exports.getPost = async function (req, res, next) {
 
   async function GetLatestSQLDocuments () {
     return new Promise(function (resolve, reject) {
-      if (RubixRegisterUserID === 'null') {
+      if (RubixRegisterUserID === 'null' || RubixRegisterUserID === null) {
         console.log('ID Empty')
       } else {
         rest
           .input('RubixRegisterUserID', RubixRegisterUserID)
           .execute('[dbo].[Dsp_RubixGetAllDocuments]', function (err, recordsets) {
-          // console.log(res)
+            // console.log(res)
             if (err) {
               reject(err)
             } else {
-            // console.log('in if statement')
+              // console.log('in if statement')
               for (let index = 0; index < recordsets.recordset.length; index++) {
                 if (recordsets.recordset[index] !== undefined) {
                   ImageID.push(recordsets.recordset[index].LastId)
