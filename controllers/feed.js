@@ -177,7 +177,7 @@ exports.getPost = async function (req, res, next) {
   } const VarTempDocumentID = await GetLatestSQLDocuments()
   // console.log('varid', VarTempDocumentID)
 
-  Post.find({ ImageID: VarTempDocumentID })
+  Post.find({ ImageID: VarTempDocumentID }, { image: 0, updatedAt: 0, createdAt: 0, _id: 0, __v: 0, fileextension: 0, imageUrl: 0 }).limit(7)
     .then(post => {
       if (!post) {
         const error = new Error('Could not find post.')
