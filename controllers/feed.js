@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 
-const { validationResult } = require('express-validator/check')
+const { validationResult } = require('express-validator')
 
 const Post = require('../models/post')
 
@@ -24,8 +24,12 @@ exports.getPosts = (req, res, next) => {
 
 exports.createPost = async function (req, res, next) {
   const errors = validationResult(req)
+  if (req.body.RubixRegisterUserID === '') {
+    console.log('RubixRegisterUserID Empty')
+  } else
   if (!errors.isEmpty()) {
     const error = new Error('validation failed data is incorrect')
+    console.log(req.body)
     error.statusCode = 422
     throw error
   }

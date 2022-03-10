@@ -1,5 +1,5 @@
 const express = require('express')
-const { body } = require('express-validator/check')
+const { body } = require('express-validator')
 
 const feedController = require('../controllers/feed')
 
@@ -17,7 +17,7 @@ router.post(
       .isLength({ min: 1 }),
     body('FileType')
       .trim()
-      .isLength({ min: 5 })
+      .isLength({ min: 2 })
   ],
   feedController.createPost
 )
