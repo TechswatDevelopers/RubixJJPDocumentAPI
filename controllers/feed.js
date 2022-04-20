@@ -114,7 +114,6 @@ exports.createPost = async function (req, res, next) {
   }
 }
 
-
 exports.getPost = async function (req, res, next) {
   const RubixRegisterUserID = req.params.postId
   // console.log(RubixRegisterUserID)
@@ -125,7 +124,7 @@ exports.getPost = async function (req, res, next) {
   const conn = await mssqlcon.getConnection()
   const rest = await conn.request()
 
-  async function GetLatestSQLDocuments() {
+  async function GetLatestSQLDocuments () {
     return new Promise(function (resolve, reject) {
       if (RubixRegisterUserID === 'null' || RubixRegisterUserID === null) {
         console.log('ID Empty')
@@ -175,6 +174,53 @@ exports.getPost = async function (req, res, next) {
   // console.log('varid', VarTempDocumentID)
 
   Post.find({ ImageID: VarTempDocumentID }, { image: 0, updatedAt: 0, createdAt: 0, _id: 0, __v: 0, fileextension: 0, imageUrl: 0 }).limit(7)
+    .then(post => {
+      if (!post) {
+        const error = new Error('Could not find post.')
+        error.statusCode = 404
+        throw error
+      }
+      res.status(200).json({ message: 'Post fetched.', post: post })
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500
+      }
+      next(err)
+    })
+}
+exports.getBase = async function (req, res, next) {
+  const RubixRegisterUserID = req.params.postId
+  const ImageID = []
+
+  const mssqlcon = require('../dbconnection')
+  const conn = await mssqlcon.getConnection()
+  const rest = await conn.request()
+
+  async function GetLatestSQLDocuments () {
+    return new Promise(function (resolve, reject) {
+      if (RubixRegisterUserID === 'null' || RubixRegisterUserID === null) {
+        console.log('ID Empty')
+      } else {
+        rest
+          .input('RubixRegisterUserID', RubixRegisterUserID)
+          .execute('[dbo].[Dsp_RubixGetAllDocuments]', function (err, recordsets) {
+            if (err) {
+              reject(err)
+            } else {
+              for (let index = 0; index < recordsets.recordset.length; index++) {
+                if (recordsets.recordset[index] !== undefined) {
+                  ImageID.push(recordsets.recordset[index].LastId)
+                }
+              }
+              resolve(ImageID)
+            }
+          })
+      }
+    })
+  } const VarTempDocumentID = await GetLatestSQLDocuments()
+
+  Post.find({ ImageID: VarTempDocumentID }, { updatedAt: 0, createdAt: 0, _id: 0, __v: 0, fileextension: 0, imageUrl: 0 }).limit(7)
     .then(post => {
       if (!post) {
         const error = new Error('Could not find post.')
