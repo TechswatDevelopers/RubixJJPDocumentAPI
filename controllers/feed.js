@@ -1,5 +1,9 @@
 const fs = require('fs')
 const path = require('path')
+const PDFMerger = require('pdf-merger-js')
+// const moment = require('moment')
+
+const merger = new PDFMerger()
 
 const { validationResult } = require('express-validator')
 
@@ -24,93 +28,108 @@ exports.getPosts = (req, res, next) => {
 
 exports.createPost = async function (req, res, next) {
   const errors = validationResult(req)
+  // console.log(req.body)
   if (!errors.isEmpty()) {
     const error = new Error('validation failed data is incorrect')
-    console.log(req.body)
+  // console.log(req.body)
     error.statusCode = 422
     throw error
-}
+  }
   if (!req.file) {
     const error = new Error('No image provided')
     error.statusCode = 422
     throw error
-  }
-  let ImageID = ''
-  const imageUrl = req.file.path.replace('\\', '/')
-  const img = fs.readFileSync(req.file.path)
-  const encodeImage = img.toString('base64')
-  const RubixRegisterUserID = req.body.RubixRegisterUserID
-  const FileType = req.body.FileType
-  const fileextension = req.file.mimetype
-  const filename = req.file.originalname
-  const fileSizeInBytes = req.file.size
-  const fileName = req.file.filename
-  // Convert the file size to megabytes (optional)
-  const fileSizeInMegabytes = fileSizeInBytes
-  // console.log(fileName)
-  // if (req.file.mimetype === 'image/png') {
-  //   FileName = fileName + '.png'
-  // } else if (req.file.mimetype === 'image/jpg') {
-  //   FileName = fileName + '.jpg'
-  // } else if (req.file.mimetype === 'image/jpeg') {
-  //   FileName = fileName + '.jpeg'
-  // } else if (req.file.mimetype === 'application/pdf') {
-  //   FileName = fileName + '.pdf'
-  // }
-  const mssqlcon = require('../dbconnection')
-  const conn = await mssqlcon.getConnection()
-  const rest = await conn.request()
-  if (RubixRegisterUserID === 'null' || RubixRegisterUserID === null) {
-    console.log('Trying to add null value', RubixRegisterUserID)
   } else {
-    async function addToDb () {
-      return new Promise(function (resolve, reject) {
-        rest
-          .input('RubixRegisterUserID', RubixRegisterUserID)
-          .input('FileType', FileType)
-          .input('imageUrl', imageUrl)
-          .input('FileName', fileName)
-          .input('FileExtension', fileextension)
-          .input('image', filename)
-          .input('FileSize', fileSizeInMegabytes)
-          .execute('[dbo].[Dsp_AddRubixRegisterUserDocuments]', function (err, recordsets) {
+  // let created = moment().format('YYYY-MM-DD hh:mm:ss')
+    let ImageID = ''
+    let FileNamefull = ''
+    const imageUrl = req.file.path.replace('\\', '/')
+    const img = fs.readFileSync(req.file.path)
+    const encodeImage = img.toString('base64')
+    const RubixRegisterUserID = req.body.RubixRegisterUserID
+    const FileType = req.body.FileType
+    const fileextension = req.file.mimetype
+    const filename = req.file.originalname
+    const fileSizeInBytes = req.file.size
+    let fileName = req.file.filename
+    let extension = ''
+    const destination = req.file.destination
+
+    // Convert the file size to megabytes (optional)
+    const fileSizeInMegabytes = fileSizeInBytes
+
+    if (fileextension === 'image/png') {
+      extension = '.png'
+    } else if (fileextension === 'image/jpg') {
+      extension = '.jpg'
+    } else if (fileextension === 'image/jpeg') {
+      extension = '.jpeg'
+    } else if (fileextension === 'application/pdf') {
+      extension = '.pdf'
+    }
+
+    const mssqlcon = require('../dbconnection')
+    const conn = await mssqlcon.getConnection()
+    const rest = await conn.request()
+    if (RubixRegisterUserID === 'null' || RubixRegisterUserID === null) {
+      console.log('Trying to add null value', RubixRegisterUserID)
+    } else {
+      async function addToDb () {
+        return new Promise(function (resolve, reject) {
+          rest
+            .input('RubixRegisterUserID', RubixRegisterUserID)
+            .input('FileType', FileType)
+            .input('imageUrl', imageUrl)
+            .input('FileName', fileName)
+            .input('FileExtension', extension)
+            .input('image', filename)
+            .input('FileSize', fileSizeInMegabytes)
+            .execute('[dbo].[Dsp_AddRubixRegisterUserDocuments]', function (err, recordsets) {
             // console.log(res)
-            if (err) {
-              reject(err)
-            } else {
-              ImageID = recordsets.recordset[0].ImageID
-              resolve(ImageID)
-            }
-          })
-      })
-    } const VarTemp = await addToDb()
-    console.log(VarTemp)
-    const post = new Post({
-      RubixRegisterUserID: RubixRegisterUserID,
-      FileType: FileType,
-      imageUrl: imageUrl,
-      filename: fileName,
-      fileextension: fileextension,
-      image: encodeImage,
-      ImageID: VarTemp
+              if (err) {
+                reject(err)
+              } else {
+                ImageID = recordsets.recordset[0].ImageID
+                FileNamefull = recordsets.recordset[0].FileNamefull
+                fileName = destination + '/' + FileNamefull
+                fs.rename(imageUrl, fileName, function (err) {
+                  if (err) console.log('rename ERROR: ' + err)
+                })
+                fileName = FileNamefull
+                resolve(ImageID)
+              }
+            })
+        })
+      } const VarTemp = await addToDb()
+
+      console.log(VarTemp)
+      const post = new Post({
+        RubixRegisterUserID: RubixRegisterUserID,
+        FileType: FileType,
+        imageUrl: imageUrl,
+        filename: fileName,
+        fileextension: fileextension,
+        image: encodeImage,
+        ImageID: VarTemp
       // image: new Buffer.From(encodeImage, 'base64'),
       // creator: { name: 'Mikkie' }
-    })
-    post
-      .save()
-      .then(result => {
-        res.status(201).json({
-          message: 'Post created successfully!',
-          ImageID: VarTemp,
-          post: result
+      })
+      post
+        .save()
+        .then(result => {
+          res.status(201).json({
+            message: 'Post created successfully!',
+            ImageID: VarTemp,
+            post: result
+          })
         })
-      })
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500
-        }
-        next(err)
-      })
+        .catch(err => {
+          if (!err.statusCode) {
+            err.statusCode = 500
+          }
+          next(err)
+        })
+    }
   }
 }
 
@@ -173,7 +192,7 @@ exports.getPost = async function (req, res, next) {
   } const VarTempDocumentID = await GetLatestSQLDocuments()
   // console.log('varid', VarTempDocumentID)
 
-  Post.find({ ImageID: VarTempDocumentID }, { image: 0, updatedAt: 0, createdAt: 0, _id: 0, __v: 0, fileextension: 0, imageUrl: 0 }).limit(7)
+  Post.find({ ImageID: VarTempDocumentID }, { updatedAt: 0, createdAt: 0, _id: 0, __v: 0, imageUrl: 0, image: 0 }).limit(14)
     .then(post => {
       if (!post) {
         const error = new Error('Could not find post.')
@@ -189,6 +208,20 @@ exports.getPost = async function (req, res, next) {
       next(err)
     })
 }
+// for (let index = 0; index < post.length; index++) {
+//   if (post[index] !== undefined) {
+//     (async () => {
+//       console.log('post: ', post[index].imageUrl)
+//       await merger.add(post[index].imageUrl) // merge all pages. parameter is the path to file and filename.
+//       // await merger.add('.pdf') // merge only page 2
+//       await merger.save('merged.pdf') // save under given name and reset the internal document
+//       // Export the merged PDF as a nodejs Buffer
+//       const mergedPdfBuffer = await merger.saveAsBuffer()
+//       // fs.writeSync('merged.pdf', mergedPdfBuffer)
+//       mergedPdf = mergedPdfBuffer
+//     })()
+//   }
+// }
 exports.getBase = async function (req, res, next) {
   const RubixRegisterUserID = req.params.postId
   const ImageID = []
@@ -220,13 +253,14 @@ exports.getBase = async function (req, res, next) {
     })
   } const VarTempDocumentID = await GetLatestSQLDocuments()
 
-  Post.find({ ImageID: VarTempDocumentID }, { updatedAt: 0, createdAt: 0, _id: 0, __v: 0, fileextension: 0, imageUrl: 0 }).limit(7)
+  Post.find({ ImageID: VarTempDocumentID }, { updatedAt: 0, createdAt: 0, _id: 0, __v: 0, fileextension: 0, imageUrl: 0, image: 0 }).limit(14)
     .then(post => {
       if (!post) {
         const error = new Error('Could not find post.')
         error.statusCode = 404
         throw error
       }
+      console.log('post: ', post.imageUrl)
       res.status(200).json({ message: 'Post fetched.', post: post })
     })
     .catch(err => {
@@ -296,7 +330,7 @@ exports.deletePost = (req, res, next) => {
       return Post.findByIdAndRemove(postId)
     })
     .then(result => {
-      console.log(result)
+      // console.log(result)
       res.status(200).json({ message: 'Deleted post' })
     })
     .catch(err => {

@@ -16,14 +16,14 @@ const app = express()
 //         cb(null, 'images');
 //     },
 //     filename: (req, file, cb) =>{
-//         cb(null, new Date().toISOString() + '-' + file.originalname);
+//         cb(null,file.originalname);
 //     }
 // });
 
 // app.use(function (req, res, next) {
-//   // Website you wish to allow to connect
-//   // res.setHeader('Access-Control-Allow-Origin:', ' *', 'https://rubixdev.cjstudents.co.za:446 ', 'http://localhost:3300', 'http://localhost', 'https://rubix.cjstudents.co.za:446')
-//   // Request methods you wish to allow
+//   Website you wish to allow to connect
+//   res.setHeader('Access-Control-Allow-Origin:', ' *', 'https://rubixdev.cjstudents.co.za:446 ', 'http://localhost:3300', 'http://localhost', 'https://rubix.cjstudents.co.za:446')
+//   Request methods you wish to allow
 //   res.setHeader('Access-Control-Allow-Methods', 'GET, POST')
 
 const fileStorage = multer.diskStorage({
@@ -60,13 +60,13 @@ const fileFilter = (req, file, cb) => {
 app.use(bodyParser.json())
 app.use(multer({ storage: fileStorage, fileFilter: fileFilter }).single('image'))
 
-// app.use(cors({
-//   origin: ['https://rubixdev.cjstudents.co.za:446', 'http://localhost:3000', 'https://rubix.cjstudents.co.za:446']
-// }))
+app.use(cors({
+  origin: ['https://jjp.rubix.mobi', 'http://localhost:3000']
+}))
 
-// app.use(cors({
-//   methods: ['GET', 'POST']
-// }))
+app.use(cors({
+  methods: ['GET', 'POST']
+}))
 
 app.use('/images', express.static(path.join(__dirname, 'images')))
 
